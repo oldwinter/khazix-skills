@@ -471,7 +471,7 @@ function renderDenied(){
   return `<div class="denied"><b>以下目录权限不足未能读取，可能遗漏体量：</b><br>${DATA.denied.map(esc).join('<br>')}</div>`;
 }
 
-// mount
+// 挂载页面
 const app=document.getElementById('app');
 app.innerHTML = renderSystem(DATA.system, DATA.summary)
   + renderTop5(DATA.top5)
@@ -482,7 +482,7 @@ app.innerHTML = renderSystem(DATA.system, DATA.summary)
   + renderDenied()
   + renderLongTerm(DATA.summary);
 
-// copy handlers (delegated)
+// 复制按钮事件（委托）
 document.addEventListener('click', e=>{
   const b=e.target.closest('.copy'); if(!b) return;
   e.stopPropagation();

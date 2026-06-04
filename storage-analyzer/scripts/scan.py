@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""Read-only storage scanner (macOS + Windows).
+"""只读存储扫描器（macOS + Windows）。
 
-Collects disk usage, system info, and per-directory size breakdowns for the
-hot spots that typically eat disk, and emits one JSON blob to stdout for Claude
-to interpret and classify. Auto-detects the OS and scans the right locations.
+收集磁盘占用、系统信息，以及常见大户目录的分项大小，并向 stdout 输出一份
+JSON，交给 Agent 解读和分级。脚本会自动识别系统并扫描对应位置。
 
-STRICTLY READ-ONLY: only sizes/lists/reads metadata. Never creates, moves, or
-deletes anything.
+严格只读：只统计大小、列目录、读取元信息。绝不创建、移动或删除任何东西。
 
-Output shape (same on both OSes):
+输出结构（两个系统一致）：
 {
   "generated_at", "scan_seconds",
   "system": {os, build, arch, user, home, filesystem,
@@ -27,7 +25,7 @@ HOME = os.path.expanduser("~")
 
 
 def human(kb):
-    """KB number -> human string like '12.3 GB'."""
+    """把 KB 数字转成人类可读字符串，如 '12.3 GB'。"""
     n = float(kb) * 1024
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if n < 1024 or unit == "TB":
@@ -50,14 +48,14 @@ def run(cmd, timeout=180):
 
 
 def du_children(path, min_kb=51200, limit=40):
-    """Size every immediate child of `path` via du, sorted desc. macOS."""
+    """用 du 统计 `path` 的每个直接子项，按大小倒序。macOS。"""
     if not os.path.isdir(path):
         return []
     results = []
     try:
         entries = sorted(os.listdir(path))
     except PermissionError:
-        return [{"name": "(permission denied)", "path": path,
+        return [{"name": "(权限不足)", "path": path,
                  "size_kb": 0, "size_h": "?", "denied": True}]
     for name in entries:
         if name in (".", ".."):
@@ -153,10 +151,10 @@ def scan_macos():
 
 
 # ======================================================================
-# Windows  (UNTESTED on this build — stdlib only: os, shutil, ctypes)
+# Windows（当前构建未实机测试；仅使用标准库 os、shutil、ctypes）
 # ======================================================================
 def dir_size_bytes(path):
-    """Recursive size in bytes via os.scandir. Skips symlinks and unreadable."""
+    """用 os.scandir 递归计算字节数，跳过符号链接和不可读项。"""
     total = 0
     try:
         with os.scandir(path) as it:
@@ -176,14 +174,14 @@ def dir_size_bytes(path):
 
 
 def scandir_children(path, min_kb=51200, limit=40):
-    """Size every immediate child of `path` via os.scandir. Windows."""
+    """用 os.scandir 统计 `path` 的每个直接子项。Windows。"""
     if not path or not os.path.isdir(path):
         return []
     results = []
     try:
         entries = sorted(os.listdir(path))
     except PermissionError:
-        return [{"name": "(permission denied)", "path": path,
+        return [{"name": "(权限不足)", "path": path,
                  "size_kb": 0, "size_h": "?", "denied": True}]
     for name in entries:
         child = os.path.join(path, name)
@@ -290,7 +288,7 @@ def main():
         system, groups = scan_windows()
     else:
         print(json.dumps({"error": "unsupported_platform", "platform": sys.platform,
-                          "message": "scan.py supports macOS and Windows only."},
+                          "message": "scan.py 仅支持 macOS 和 Windows。"},
                          ensure_ascii=False))
         return
     data = {

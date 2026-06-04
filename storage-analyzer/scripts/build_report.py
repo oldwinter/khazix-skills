@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Inject an analysis JSON into the HTML template -> a standalone report.
+"""把分析 JSON 注入 HTML 模板，生成可独立打开的报告。
 
-Usage:
+用法：
     build_report.py <analysis.json> [output.html]
 
-The analysis JSON is produced by Claude after interpreting scan.py output.
-Schema (all sections optional except system):
+分析 JSON 由 Agent 解读 scan.py 输出后生成。
+Schema（除 system 外，其余章节都可选）：
 
 {
   "generated_at": "2026-05-28 12:00:00",
