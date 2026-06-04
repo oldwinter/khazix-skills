@@ -13,7 +13,7 @@ CLAUDE.md / AGENTS.md 不是变更日志。下面这些反模式发现了就删 
 | 已经稳定 ≥ 7 天的"新功能上线"叙事 | 该融入项目概览的融入；纯历史的删 |
 | 一次性事故的复盘细节（"X 时 Y 服务挂了 30min 因为 Z"） | 留 1 行红线规则（"不要再裸跑 systemctl stop X"），事故详情归 docs/PLAYBOOK.md 或删 |
 | 已被新版本取代的"中间态"叙事（"5/6 改了 X，5/8 又改成 Y"） | 只留最终态规则；中间历史删 |
-| 单条 memory > 100 行 + 全是事故复盘 | 提炼成一条 ≤ 30 行的"规则 + Why + How to apply"；多余的删 |
+| 单条 memory > 100 行 + 全是事故复盘 | 提炼成一条 ≤ 30 行的"规则 + 原因 + 怎么应用"；多余的删 |
 | 记忆条目里"已被 X 取代" / "已废弃" / "保留作历史" 字样 | 99% 真的可以删，docs 已经是权威 |
 
 判断标准：**这条信息在下次 AI 写代码时如果没看到，会犯错吗？** 不会就删 / 迁。
@@ -25,7 +25,7 @@ CLAUDE.md / AGENTS.md 不是变更日志。下面这些反模式发现了就删 
 | 新增 API / 路由 | 项目根 markdown 路由清单 · `docs/integration-guide.md` API 速查表 · `docs/architecture.md` Routes 小节 |
 | 新增 / 改名 环境变量 | 项目根 markdown 环境变量表 · `docs/operator-runbook.md` 环境变量章节 · `docs/integration-guide.md`(如果下游要配) |
 | 新增数据库表 / 列 | 项目根 markdown 数据库表 · `docs/architecture.md` Data Model |
-| 新增 / 改动 用户流程 | 项目根 markdown 用户流程 · README 相关命令行示例 · `docs/handoff.md` What Exists Today |
+| 新增 / 改动 用户流程 | 项目根 markdown 用户流程 · README 相关命令行示例 · `docs/handoff.md` 当前已有能力 |
 | 新增大特性(能跨多文件) | 以上全部 + `docs/architecture.md` 新增章节 + `docs/handoff.md` 已完成清单 |
 | 新增术语 / 改命名 | `docs/integration-guide.md` 术语表(如果有)+ 全局搜索旧术语替换 |
 | 部署参数 / 基础设施变化 | `docs/operator-runbook.md` · 项目根 markdown 部署章节 |

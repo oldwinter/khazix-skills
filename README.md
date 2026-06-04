@@ -1,6 +1,6 @@
 <div align="center">
 
-**中文** · [English](./README.en.md)
+**中文** · [中文化版本](./README.en.md)
 
 # 🧰 Khazix Skills
 
@@ -80,7 +80,7 @@
 /neat            # 直接命令
 整理一下          # 自然语言
 同步一下          # 自然语言
-sync up          # English
+sync up          # 英文
 ```
 
 **🌐 跨平台**：Claude Code · Codex · OpenCode · OpenClaw

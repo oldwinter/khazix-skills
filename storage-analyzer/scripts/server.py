@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
-"""Serve the storage report with a guarded one-click delete API (macOS + Windows).
+"""用带护栏的一键删除 API 提供存储报告服务（macOS + Windows）。
 
-Starts on 127.0.0.1 + a random port + a random per-session token, serves the
-interactive report, and exposes POST /action to move green-tier paths to Trash
-or delete them outright. Stop with Ctrl+C.
+服务启动在 127.0.0.1、随机端口和随机会话 token 上，提供交互式报告，
+并暴露 POST /action，用于把绿灯路径移到废纸篓或直接删除。按 Ctrl+C 停止。
 
-Usage:
+用法：
     server.py <analysis.json>
 
-SAFETY MODEL — read before changing:
-- Allowlist: only paths listed in this report's green items `trash_paths` are
-  accepted. Every request path is realpath-resolved and must be in the allowlist
-  AND under $HOME. Anything else is rejected. This is the core guard — the
-  endpoint cannot be used to delete arbitrary files.
-- Bound to 127.0.0.1 only; every POST requires the session token; Host header
-  must be 127.0.0.1 (blocks DNS-rebinding from a malicious page).
-- Two modes: "trash" (Finder -> Trash, reversible) and "rm" (immediate,
-  irreversible). The browser confirms each action before sending.
+安全模型，修改前必须阅读：
+- 白名单：只接受报告中绿灯项 `trash_paths` 列出的路径。每个请求路径都会
+  解析 realpath，且必须同时在白名单内、位于 $HOME 下。其他路径全部拒绝。
+  这是核心护栏，保证接口不能用来删除任意文件。
+- 只绑定 127.0.0.1；每个 POST 都必须带会话 token；Host header 必须是
+  127.0.0.1（阻断恶意页面的 DNS rebinding）。
+- 两种模式："trash"（进入 Finder / Recycle Bin，可恢复）和 "rm"
+  （立即删除，不可恢复）。浏览器在发送请求前会二次确认。
 """
 import json
 import os
@@ -85,8 +83,8 @@ def move_to_trash(path):
 
 
 def _trash_macos(path):
-    # osascript Finder delete -> macOS Trash, recoverable. First run may prompt
-    # for Finder automation permission. Fall back to ~/.Trash move if it fails.
+    # osascript Finder delete -> macOS 废纸篓，可恢复。首次运行可能弹出
+    # Finder 自动化授权；失败时退回移动到 ~/.Trash。
     script = 'tell application "Finder" to delete (POSIX file %s as alias)' % json.dumps(path)
     r = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
     if r.returncode != 0:
@@ -96,8 +94,8 @@ def _trash_macos(path):
 
 
 def _trash_windows(path):
-    # Send to Recycle Bin via SHFileOperationW with FOF_ALLOWUNDO (stdlib ctypes).
-    # UNTESTED on this build — verify on a real Windows machine.
+    # 通过 SHFileOperationW + FOF_ALLOWUNDO 送进回收站（stdlib ctypes）。
+    # 当前构建未在真实 Windows 上测试，首次使用需实机验证。
     import ctypes
     from ctypes import wintypes
 
@@ -175,13 +173,13 @@ class Handler(BaseHTTPRequestHandler):
             html = TPL.replace("__REPORT_DATA__", blob).replace("__DELETE_CONFIG__", cfg)
             self._send(200, html, "text/html; charset=utf-8")
         else:
-            self._send(404, "not found", "text/plain")
+            self._send(404, "未找到", "text/plain")
 
     def do_POST(self):
         if self.path != "/action":
-            self._send(404, json.dumps({"ok": False, "error": "not found"}))
+            self._send(404, json.dumps({"ok": False, "error": "未找到"}))
             return
-        # DNS-rebinding guard: only accept local Host
+        # DNS rebinding 护栏：只接受本地 Host
         host = (self.headers.get("Host") or "").split(":")[0]
         if host not in ("127.0.0.1", "localhost"):
             self._send(403, json.dumps({"ok": False, "error": "host 不被允许"}))
@@ -215,7 +213,7 @@ class Handler(BaseHTTPRequestHandler):
                 if mode == "open":
                     open_in_file_manager(rp)
                 elif not os.path.exists(rp):
-                    pass  # already gone, treat as success
+                    pass  # 已不存在，视作成功
                 elif mode == "trash":
                     move_to_trash(rp)
                 else:

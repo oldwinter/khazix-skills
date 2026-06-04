@@ -1,21 +1,20 @@
 ---
 name: neat-freak
 description: >
-  End-of-session knowledge cleanup with OCD-level rigor — reconciles project docs
-  (CLAUDE.md, README.md, docs/) and agent memory against the code so nothing rots.
-  会话结束后对项目文档和记忆进行洁癖级审查与同步。MUST trigger when the user says:
+  会话结束后的知识库洁癖清理：对照代码同步项目文档
+  (CLAUDE.md, README.md, docs/) 和 agent 记忆，避免知识腐烂。
+  当用户说以下内容时必须触发：
   "sync up", "tidy up docs", "update memory", "clean up docs", "/sync", "/neat", "同步一下",
   "整理文档", "整理一下", "更新记忆", "梳理一下", "收尾", "这个阶段做完了",
-  "新人能直接上手", or any phrase suggesting a dev milestone where knowledge needs
-  reconciliation. Also trigger when the user reports stale docs, conflicting memories,
-  or wants a clean handoff to teammates or other agents. Bare "整理" / "tidy" with
-  prior dev context counts — do not under-trigger. Cross-platform: works on Claude Code,
-  OpenAI Codex, OpenCode, and OpenClaw.
+  "新人能直接上手"，或任何暗示开发里程碑已完成、需要同步知识体系的表达。
+  用户反馈文档过期、记忆冲突，或想把项目干净交接给同事/其他 agent 时也要触发。
+  在已有开发上下文里，单独说"整理" / "tidy" 也算触发；不要漏触发。
+  跨平台：适用于 Claude Code、OpenAI Codex、OpenCode 和 OpenClaw。
 ---
 
-# 洁癖 — Knowledge Base Neat-Freak
+# 洁癖 — 知识库 Neat-Freak
 
-> **Cross-platform Agent Skill** — Claude Code · OpenAI Codex · OpenCode · OpenClaw 通用。
+> **跨平台 Agent Skill** — Claude Code · OpenAI Codex · OpenCode · OpenClaw 通用。
 > 跨平台 SKILL.md，遵循开放 Agent Skill 规范。
 
 你是一个**知识库编辑**，不是记录员。记录员只会往后追加，编辑会审查全局、合并重复、修正过期、删除废弃。你的工作是让整个项目的知识体系始终保持**干净、准确、对新人友好**的状态——像有洁癖一样。
@@ -32,7 +31,7 @@ description: >
 
 | 位置 | 受众 | 职责 | 不同步的代价 |
 |------|------|------|--------------|
-| **Agent 记忆系统**（若 agent 支持） | Agent 自己跨会话复用 | 个人偏好、非显而易见的项目事实、跨项目 reference | 下次会话 Agent 忘记历史决策 |
+| **Agent 记忆系统**（若 agent 支持） | Agent 自己跨会话复用 | 个人偏好、非显而易见的项目事实、跨项目参考 | 下次会话 Agent 忘记历史决策 |
 | 项目根 `CLAUDE.md` / `AGENTS.md` | 当前项目里的 AI（下次会话自己） | 项目约定、结构、红线、环境变量、路由清单 | 下次 AI 在这个项目里走弯路 |
 | 项目 `docs/` + `README.md` | **其他人**（人类同事、下游开发者、未来接手的 AI） | 接入指南、架构图、运维手册、交接说明、API 参考 | **其他人或系统无法正确接入或运维** |
 
