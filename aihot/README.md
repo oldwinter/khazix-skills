@@ -1,83 +1,99 @@
 # AI HOT — Agent Skill
 
-让 AI Agent 只用一句自然的中文，就能获取 [aihot.virxact.com](https://aihot.virxact.com) 每天的 AI HOT 日报和全部 AI 动态，无需配置。
+让支持 Agent Skills（`SKILL.md`）的工具查询 [AI HOT](https://aihot.virxact.com) 当前精选、最近 7 天公开动态、热点和日报。
 
-> 跨 Claude Code · Codex CLI · Cursor · Gemini CLI · GitHub Copilot · OpenCode · Cline · Windsurf 等任意支持 SKILL.md 格式的 Agent 平台。
+匿名只读，无需 API Key。不同 Agent 的目录和授权方式不同，因此安装前应先确认当前平台和目标路径。
 
-## 这是什么
+## 推荐安装：让 Agent 先审阅再写入
 
-[AI HOT](https://aihot.virxact.com) 是一个面向中文 AI 创业者的资讯站，每天早上 08:00 整理出分版块日报，并在全天持续抓取资讯，经 LLM 评分后筛选出精选条目。
+把下面这段发给当前 Agent：
 
-这个 Skill 让 Agent 直接调用 AI HOT 的公开 REST API，无需打开浏览器。
+```text
+请先检查并安装 AI HOT Skill：https://aihot.virxact.com/aihot-skill/
 
-## 安装
-
-### 方式 A：让 Agent 自动安装（Claude Code / Codex 通用）
-
-在你的 Agent 中直接发送这句话：
-
-```
-帮我安装这个 Skill：https://aihot.virxact.com/aihot-skill/
+先读取 SKILL.md、README.md，告诉我你准备写入的目录和文件；不要使用 sudo，不要覆盖其它 Skill。安装完成后告诉我是否需要重启或开启新会话，并给出一个验证问题。
 ```
 
-Agent 会获取 `SKILL.md`，然后写入对应平台的 Skill 目录。
+来源可直接审阅：
 
-### 方式 B：用一行命令手动安装（适用于 Codex / Gemini CLI / OpenCode 等不会自动安装的工具）
+- [SKILL.md](https://aihot.virxact.com/aihot-skill/SKILL.md)
+- [install.sh](https://aihot.virxact.com/aihot-skill/install.sh)
+- [GitHub 镜像](https://github.com/KKKKhazix/khazix-skills/tree/main/aihot)
+
+## 人类手动安装
+
+先查看脚本，再显式指定平台。脚本不使用 sudo，只写 `SKILL.md` 与 `README.md`。
 
 ```bash
-curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh | bash
+# Claude Code
+bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) --target claude
+
+# Codex
+bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) --target codex
+
+# Gemini CLI
+bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) --target gemini
+
+# GitHub Copilot
+bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) --target copilot
+
+# OpenCode
+bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) --target opencode
+
+# 通用 ~/.agents/skills 目录
+bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) --target agents
 ```
 
-默认安装到 `~/.claude/skills/aihot/`。如需安装到 Codex / Gemini / OpenCode 等其他路径，请先设置环境变量再运行：
+自定义目录：
 
 ```bash
-SKILL_DIR=~/.codex/skills/aihot \
-  bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh)
+bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) \
+  --dir "$HOME/path/to/skills/aihot"
 ```
 
-（`install.sh` 不会执行 `chmod` 或 `sudo`，只会用 `mkdir` 创建目录，再用 `curl` 下载 `SKILL.md` 和 `README.md`。可运行 `curl https://aihot.virxact.com/aihot-skill/install.sh` 查看并审查安装脚本。）
+## 安装后验证
 
-### 方式 C：从仓库获取
+1. 重启 Agent 或开启新会话。
+2. 让 Agent 列出它发现的 skills，确认存在 `aihot`。
+3. 提问：`过去 24 小时 AI 圈最重要的 5 件事是什么？`
 
-本 Skill 也同步到了卡兹克的 Skills 合集 [KKKKhazix/khazix-skills](https://github.com/KKKKhazix/khazix-skills/tree/main/aihot)，与 hv-analysis / khazix-writer / neat-freak 等其他 Skill 一同维护。使用 `git clone` 拉取仓库后，取出对应子目录即可。
+成功的回答会写明时间窗，给出中文摘要，并把标题链接到 AI HOT 站内阅读页。
 
-## 触发示例
+## 更新
 
-随便问，不需要记关键字：
+不要运行一个会默认写入其它平台目录的“通用更新命令”。让当前 Agent 找到它正在加载的文件并覆盖同一目录：
 
-- 今天 AI 圈有什么新东西？
-- 看一下今天的 AI 日报
-- 最近 OpenAI 有什么发布？
-- 最近一周的 AI 论文
-- 看下精选条目
-- AI 模型发布列表
-- 最近 3 天 AI 行业动态
+```text
+请更新当前已安装的 AI HOT Skill：https://aihot.virxact.com/aihot-skill/
+先告诉我当前 aihot/SKILL.md 路径，再覆盖同一目录。
+更新后用可识别的非浏览器 User-Agent 验证一次；如果此前出现 blocked / 567，不要继续沿用 Mozilla、Chrome 或 HeadlessChrome UA。
+```
 
-Skill 会自动调用 [aihot.virxact.com](https://aihot.virxact.com) 的公开 API（无须配置 API Key），并通过可识别的 `aihot-skill/` User-Agent 标明身份，不伪装成浏览器；获取结果后，会整理成中文 Markdown 简报返回给你。
+手动更新时，重新运行上面的对应 `--target` 或 `--dir` 命令。
 
-## 不需要登录、不需要 API Key
+旧版 Agent 出现 `blocked / 567` 不等于 IP 被封，通常需要更新 Skill 或修正定时任务的 User-Agent。修正后只重试一次；仍失败请在反馈中附上 `requestId`。
 
-AI HOT 的数据 100% 公开免费，匿名可访。Skill 调以下接口：
+## 能查询什么
 
-| 路径 | 用途 |
-|---|---|
-| `/api/public/daily` | 最新 AI HOT 日报 |
-| `/api/public/daily/{YYYY-MM-DD}` | 指定日期日报 |
-| `/api/public/dailies` | 日报归档索引 |
-| `/api/public/items` | 全部 AI 动态（按精选 / 分类 / 时间 / 关键词筛选） |
-| `/api/public/hot-topics` | 当前热点（多源热度排序） |
-| `/api/public/fingerprint` | 轻量新鲜度指纹（供 `cron` / 监控轮询使用） |
-| `/api/public/version` | 版本信息（Skill 自检更新用） |
+- 当前精选与最近 7 天公开池
+- 现在最热的多源事件
+- 最新或指定日期日报、日报归档
+- 模型、产品、行业、论文、技巧分类
+- 公司、产品和主题关键词
 
-进阶用法（RSS 订阅 / REST API 详细参数）见 [aihot.virxact.com/agent](https://aihot.virxact.com/agent)。
+公开池不等于 AI HOT 全库：公众号、未审内容、低相关条目和已合并重复条目不会返回。
+
+## 内容与署名
+
+Skill 代码使用 MIT License；这不改变第三方原文的版权。对外发布 API 结果时请保留 AI HOT 返回的 `attribution/canonical`，重要引用请回第三方原文核对。
+
+详细接入文档：[aihot.virxact.com/agent](https://aihot.virxact.com/agent)
 
 ## 反馈
 
-Skill 漏触发、漏筛选、想加新查询场景？
+- [AI HOT 反馈页](https://aihot.virxact.com/feedback)
+- [GitHub Skills 镜像](https://github.com/KKKKhazix/khazix-skills/tree/main/aihot)
 
-- 在 [aihot.virxact.com/feedback](https://aihot.virxact.com/feedback) 留言
-- 或直接在 [Skills 合集仓库](https://github.com/KKKKhazix/khazix-skills/tree/main/aihot) 提交 Issue
+## License
 
-## 许可证
-
-MIT
+MIT（仅 Skill 代码与说明文件）
