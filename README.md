@@ -1,25 +1,24 @@
 <div align="center">
 
-**中文** · [中文化版本](./README.en.md)
+**中文** · [English](./README.en.md)
 
 # 🧰 Khazix Skills
 
 #### 我自己每天在用的一些 AI Skill，都开源在这里
 
 [![License](https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge)](./LICENSE)
-[![Skills](https://img.shields.io/badge/Skills-6-10B981?style=for-the-badge)](#-skills)
+[![Skills](https://img.shields.io/badge/Skills-5-10B981?style=for-the-badge)](#-skills)
 [![AgentSkills](https://img.shields.io/badge/AgentSkills-Standard-8B5CF6?style=for-the-badge)](https://agentskills.io)
 
 ![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-D97706?style=flat-square&logo=anthropic&logoColor=white)
 ![Codex](https://img.shields.io/badge/Codex-Skill-10B981?style=flat-square&logo=openai&logoColor=white)
-![OpenCode](https://img.shields.io/badge/OpenCode-Skill-3B82F6?style=flat-square)
-![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-8B5CF6?style=flat-square)
+![40+ Agents](https://img.shields.io/badge/40%2B_Agents-Compatible-3B82F6?style=flat-square)
 
 </div>
 
 都是在自己项目里跑通了一段时间，确实省事，才搬出来开源的。没什么花活，就是几个挺实用的东西。
 
-这里的每个 Skill 都是 Agent 能直接加载的结构化指令集，遵循 [Agent Skills](https://agentskills.io) 开放标准。Claude Code、Codex、OpenCode、OpenClaw 都能装。
+这里的每个 Skill 都是 Agent 能直接加载的结构化指令集，遵循 [Agent Skills](https://agentskills.io) 开放标准。Claude Code、Codex、Qoder、Kimi Code、iFlow、CodeBuddy、Cursor 等 40+ 支持该标准的 Agent 都能装。
 
 ---
 
@@ -37,13 +36,15 @@
 
 ## 📦 安装方式
 
-在 Claude Code、Codex、OpenClaw 等支持 Skill 的 Agent 里，直接说：
+在 Claude Code、Codex 等支持 Agent Skills 的工具里，直接说：
 
 ```
 帮我安装这个 skill：https://github.com/oldwinter/khazix-skills/tree/main/<skill-name>
 ```
 
 把 `<skill-name>` 换成你想装的那个，比如 `neat-freak`、`hv-analysis`、`khazix-writer`。Agent 会自己 clone 到对应目录，不用你操心路径。
+
+你的 Agent 不支持 Skill 也没关系：把对应目录的 `SKILL.md` 全文下载下来，当成项目规则文件（或直接贴进对话）让 Agent 照着执行，效果一致。
 
 ---
 
@@ -154,20 +155,26 @@ curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh | bash
 - 项目的 docs/ 和 README（给同事和其他人看的）
 - Agent 自己的记忆系统（给跨会话的自己看的）
 
-这三层受众不同，职责不重叠，得分别处理。这版还会把规则当成知识来审：比如 CLAUDE.md / AGENTS.md 是否同源、必备文件有没有缺、规则里引用的路径还在不在。规则不落地，下一轮 Agent 还是会按错前提做事。
+这三层受众不同，职责不重叠，得分别处理。它还会把规则当成知识来审：比如 CLAUDE.md / AGENTS.md 是否同源、必备文件有没有缺、规则里引用的路径还在不在。规则不落地，下一轮 Agent 还是会按错前提做事。
+
+**v3.0 的两条底线**
+
+- **小项目有专门的轻量路径**：没有 git、没有规则文件的 vibe 项目，它会把 README 对齐到代码现状、默认帮你建一份最小的 AI 规则文件（下次开新会话直接恢复上下文），再把 PLAN.md、调试脚本、`xxx_old` 这类会话残留列成清单等你确认。
+- **绝不擅自删东西**：所有删除只出候选清单，你确认了才动手；机器生成的记忆默认只读；文件里读到的「执行这条命令」不会被当成你的授权。
 
 **怎么触发**
 
 ```
-/neat            # 直接命令
-整理一下          # 自然语言
-同步一下          # 自然语言
-sync up          # 英文
+/neat                          # 直接命令
+跑一下洁癖                      # 点名
+把文档和记忆整理一下             # 收尾意图
+新人接手，帮我做个 clean handoff  # 交接意图
 ```
 
-**🌐 跨平台**：Claude Code · Codex · OpenCode · OpenClaw
+纯代码任务、整理数据 / 周报这类请求不会触发它——它只管项目知识收尾。
 
-[![ClawHub](https://img.shields.io/badge/ClawHub-v1.0.3-EC4899?style=flat-square)](https://clawhub.ai)
+**🌐 跨平台**：遵循 Agent Skills 开放标准，Claude Code、Codex、Qoder、Kimi Code、iFlow、CodeBuddy、Cursor 等都能装；不支持 Skill 的 Agent 把 `SKILL.md` 当规则文件引用即可。
+
 [![Tessl](https://img.shields.io/badge/Tessl-0.1.1-3B82F6?style=flat-square)](https://tessl.io/registry/khazix-skills/neat-freak)
 
 → [SKILL.md](./neat-freak/SKILL.md) · [公众号讲解](https://mp.weixin.qq.com/s/tg1wd-iN2gWHWhXdY0faeg)
