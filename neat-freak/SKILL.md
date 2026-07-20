@@ -4,9 +4,9 @@ description: >-
   知识与治理收尾：把项目文档、规则文件（CLAUDE.md/AGENTS.md）、获准维护的
   Agent 记忆和工作区残留，与代码和真实运行态对齐，让下一次会话或下一位接手者
   从唯一现役答案开始。当用户点名 "neat-freak"、"洁癖" 或 "/neat" 时触发；
-  也会在明确的知识收尾意图下触发，例如开发后同步或整理项目文档/规则/记忆、
+  也会在明确的知识收尾意图（knowledge-closeout intent）下触发，例如开发后同步或整理项目文档/规则/记忆、
   CLAUDE.md 或 memory 已过期/冲突、要干净交接给同事或新会话，或审计工作区规则
-  是否真正执行。不要因纯 coding/refactoring/debugging、整理数据或文案（JSON、周报、
+  是否真正执行。以下情况不要触发（Do not trigger）：纯 coding/refactoring/debugging、整理数据或文案（JSON、周报、
   changelog announcements），或没有项目知识上下文的单独“整理”而触发。
 compatibility: 需要文件系统读取权限。写入和破坏性动作服从当前 Agent、workspace 与用户授权规则。Git 和 rg 可增强验证；scripts/audit-inventory.sh 需要 Bash，缺少时应手工执行等价检查。适用于所有支持 Agent Skills 的平台。
 metadata:
