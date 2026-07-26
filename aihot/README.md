@@ -124,7 +124,7 @@ bash <(curl -fsSL https://aihot.virxact.com/aihot-skill/install.sh) \
 ## 内容、许可与署名
 
 - `LICENSE` 中的 MIT License 只覆盖 Skill 指令与随附文件。
-- API 数据适用 [AI HOT 公开接入条款](https://aihot.virxact.com/about#public-integration-terms)。
+- API 数据适用 [AI HOT 公开接入条款](https://aihot.virxact.com/terms)。
 - 第三方原文及全文版权仍归原作者，不因经过 AI HOT 而改变。
 - 对外发布 API 结果时保留 AI HOT attribution 与 canonical；重要引用回第三方原文核对。
 

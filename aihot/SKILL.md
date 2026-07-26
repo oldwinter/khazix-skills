@@ -4,7 +4,7 @@ description: 查询 AI HOT 的中文 AI 资讯、精选、当前热点和日报�
 license: MIT. See LICENSE
 metadata:
   author: Virxact
-  version: "1.0.1"
+  version: "1.1.2"
 ---
 
 # AI HOT
@@ -29,22 +29,25 @@ metadata:
 | 用户意图 | 默认请求 |
 |---|---|
 | “今天／过去 24 小时有什么” | `/api/v1/items?mode=selected&window=24h` |
-| “最近／最近一周有什么” | `/api/v1/items?mode=selected&window=7d` |
+| “最近／最近一周有什么” | `/api/v1/items?mode=selected&window=7d&limit=10` |
 | “当前最热／最近在爆什么” | `/api/v1/hot-topics` |
 | 明确说“日报” | `/api/v1/dailies/latest` 或 `/api/v1/dailies/{YYYY-MM-DD}` |
 | “有哪些日报／日报归档” | `/api/v1/dailies?limit=N` |
 | 模型／产品／论文／行业／技巧 | `/api/v1/items?mode=selected&category=<slug>&window=<24h|7d>` |
 | 公司、产品或主题关键词 | `/api/v1/items?mode=selected&q=<关键词>&window=<24h|7d>` |
-| “全部／所有公开动态” | `/api/v1/items?mode=all&window=<24h|7d>` |
+| “全部／所有公开动态” | `/api/v1/items?mode=all&window=<24h|7d>&limit=10` |
 | 当前全部精选或持久镜像 | 读取 [完整精选同步](references/sync.md) |
 
 路由规则：
 
 - 宽问题默认 `mode=selected`。只有用户明确要全部公开动态时才用 `mode=all`。
+- **关键词查询精选池返回空集时，用完全相同的参数再查一次 `mode=all`**，并在输出里注明这些「未进入精选」。两次都空才回答未找到。精选池是高门槛策展，冷门公司或早期产品常常只在全量池里有；直接报「没有」会让用户以为 AI HOT 没覆盖，而实际上站内有内容。这条只适用于带 `q` 的查询，不要拿它扩大「今天有什么」这类宽问题的范围。
+- 时间窗默认按 AI HOT 时间轴（`by=timeline`），与网站看到的一致：慢推信源（官方博客、公众号、HuggingFace Daily）原文两三天前发、今天才收录的，仍算「今天」；三天以上的历史回填则归位到原发布日，不会冒充最近。需要严格按第三方原文发布时间对账时才显式加 `by=published`，并向用户说明口径不同。
+- 只取用户需要的条数：默认 `limit=50` 是给客户端用的，做简报时 7 天窗口传 `limit=10` 就够，不要默认拉满。
 - 只有用户明确说“日报”才用 dailies；日报是固定日切成品，不等同滚动时间窗。
 - 最新日报返回 404 时，只查询一次有界的 `/api/v1/dailies?limit=7`；索引有结果时，再用其中实际返回的最近日期请求一次 `/api/v1/dailies/{date}`，索引为空就停止。绝不猜“昨天”或自行拼日期。
-- “现在最热”只用 hot-topics；items 按发布时间倒序，不能替代热度排序。
-- v1 原生时间窗是 `24h` 或 `7d`。用户指定其它七天内范围时，取最小覆盖窗后按 `publishedAt` 本地收窄，并如实写明范围。
+- “现在最热”只用 hot-topics；items 按时间倒序，不能替代热度排序。
+- v1 原生时间窗是 `24h` 或 `7d`。用户指定其它七天内范围时，取最小覆盖窗后本地收窄，并如实写明范围。收窄要用与服务端一致的时间轴值，可由返回字段直接算出：`publishedAt` 为空时取 `discoveredAt`；`discoveredAt - publishedAt > 72 小时`（历史回填）时取 `publishedAt`；其余取 `discoveredAt`。直接拿 `publishedAt` 收窄会把慢推信源误删。
 - “最近一周资讯”是滚动 7 天查询，不等同 AI HOT 的编辑成品周报。用户明确要 AI HOT 周报或月报时，如实说明当前只有 `https://aihot.virxact.com/weekly` 与 `https://aihot.virxact.com/monthly` 网页，尚无 Skill／API／RSS 端点；不得调用猜测的 weeklies／monthlies 路径。
 - 当前 v1 没有按条目 ID 获取正文的端点。用户要深入阅读时，只能提供 items 已返回的 `summary`、`links.aihot` 与 `links.original`；不得绕过 API 抓网页或把混合权限的全文 RSS 冒充单篇正文接口。
 - 普通资讯问答不得下载 selected snapshot；它是给完整镜像使用的高级同步能力。
@@ -54,8 +57,10 @@ metadata:
 
 ## 请求
 
-- API 匿名、只读、无需 Key。客户端允许时可设置 `User-Agent: aihot-skill/1.0.1 (+https://aihot.virxact.com/aihot-skill/)` 方便诊断，但不得因为无法设置而拒绝查询或伪装浏览器。
+- API 匿名、只读、无需 Key。客户端允许时可设置 `User-Agent: aihot-skill/1.1.2 (+https://aihot.virxact.com/aihot-skill/)` 方便诊断，但不得因为无法设置而拒绝查询或伪装浏览器。
 - 普通查询不做版本检查，也不访问旧兼容层。后端在稳定 v1 契约内升级时，用户无需更新本 Skill。
+- 反复查询同一个 URL 时保存响应的 `ETag`，下次带 `If-None-Match` 发出；`304` 表示内容没变，直接复用上次结果，不要重新总结。
+- 定时任务对同一端点至少间隔 60 秒；资讯类内容没有秒级新鲜度，更密的轮询只是浪费双方带宽。
 - 本地 Skill 不会自动从远端更新。只有安装平台或用户明确发起升级时，才审阅并在当前实际加载的同一目录原子替换完整包。
 
 ## 给用户的输出
@@ -81,4 +86,4 @@ metadata:
 - 标题默认链接 `links.aihot`；只有用户明确要出处时再附 `links.original`。
 - 日报 sections／flashes 的 `links.aihot` 可能为空；此时使用 `links.original`，不要寻找旧字段 `permalink` 或 `sourceUrl`。
 - 不展示 endpoint、cursor、ETag、User-Agent、JSON 字段名等实现细节。
-- 对外发布或接入二次产品时保留响应中的 AI HOT attribution 与 canonical；第三方原文版权仍归原作者。缓存、商业增值和再分发边界见 `https://aihot.virxact.com/about#public-integration-terms`。
+- 对外发布或接入二次产品时保留响应中的 AI HOT attribution 与 canonical；第三方原文版权仍归原作者。缓存、商业增值和再分发边界见 `https://aihot.virxact.com/terms`。

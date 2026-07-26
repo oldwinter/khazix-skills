@@ -22,10 +22,20 @@
 |---|---|
 | `mode` | `selected` 或 `all`；默认 `selected` |
 | `window` | `24h` 或 `7d`；默认 `7d` |
+| `by` | `timeline` 或 `published`；默认 `timeline`（见下方「时间口径」） |
 | `category` | `ai-models`、`ai-products`、`industry`、`paper`、`tip` |
 | `q` | 2—200 字；使用服务端搜索 |
-| `limit` | 1—100；默认 50 |
+| `limit` | 1—100；默认 50。只需要头几条时显式调小，别默认拉满 50 |
 | `cursor` | 原样回传上一页的 `page.nextCursor` |
+
+#### 时间口径
+
+`window` 从哪个时间点往回算、结果按哪个时间排序，由 `by` 决定。两个原始时间戳恒定随每条返回，可自行判断。
+
+- `by=timeline`（默认）：与 aihot.virxact.com 网页看到的顺序和集合一致。规则是——原文发布后 72 小时内被收录，按收录时间；超过 72 小时才收录的历史回填，归位到原文发布日。所以官方博客、公众号、HuggingFace Daily 这类「原文两三天前发、今天才抓到」的慢推信源，仍会出现在 `window=24h` 里，同时旧文回填不会冒充最近。
+- `by=published`：只按第三方原文发布时间。慢推信源会掉出短窗口——同一时刻 `window=24h` 下它比默认口径少约两成条目。需要严格按原文时间线对账时才用。
+
+切换 `by` 会让已持有的 cursor 失效并返回 `invalid_cursor`，这是有意的：换了口径继续用旧书签会串页。重新从第一页开始即可。
 
 响应外层：
 
@@ -37,7 +47,8 @@
     "category": null,
     "q": null,
     "window": "24h",
-    "ordering": "publishedAtDesc"
+    "by": "timeline",
+    "ordering": "timelineDesc"
   },
   "items": [],
   "page": {
@@ -102,11 +113,27 @@ GET /api/v1/dailies/2026-07-24
 ### 完整精选同步
 
 ```text
-GET /api/v1/selected/snapshot?fields=default
+GET /api/v1/selected/snapshot?fields=minimal&limit=500
+GET /api/v1/selected/snapshot?fields=minimal&limit=500&page=<opaque>
 GET /api/v1/selected/changes?cursor=<opaque>&limit=100
 ```
 
 只有用户明确要求当前全部精选或持久镜像时才使用。完整算法见 [sync.md](sync.md)；不要仅凭本文件实现同步状态机。
+
+snapshot 是**分页**的，一次请求拿不到全部：
+
+| 参数 | 合同 |
+|---|---|
+| `fields` | `default` 或 `minimal`；默认 `default`。`minimal` 去掉摘要与原文链接，体积约为 default 的四分之一 |
+| `limit` | 1—1000；默认 500 |
+| `page` | 原样回传上一响应的 `nextPage`；续页的 `fields` 由游标锁定，传不同值无效 |
+
+响应里有两个不同的游标，**不要混用**：
+
+- `cursor`：同步游标，逐页恒定，指向第一页取到的水位。**翻完所有页之后**才拿它调 `changes`。
+- `nextPage`：翻页游标，只在本轮快照内有效。`hasMore=true` 时必须继续翻，否则镜像不完整。
+
+规模参考：当前约 2900 条，`fields=default` 全量约 3.1MB（gzip 1.05MB），`fields=minimal` 约 1.08MB（gzip 247KB）。条目只增不减，会逐年变大——不确定就用 `minimal`，需要摘要时再取 `default`。
 
 ## 分页
 
@@ -134,5 +161,8 @@ v1 只承诺 `24h` 和 `7d` 两个服务端窗口：
 
 - 今天、过去 24 小时：用 `24h`。
 - 最近、最近一周：用 `7d`。
-- 用户要 2 天、3 天等其它七天内范围：取 `7d` 后按 `publishedAt` 收窄。
+- 用户要 2 天、3 天等其它七天内范围：取 `7d` 后本地收窄。**收窄用的字段必须与请求的 `by` 口径一致**，否则会切掉服务端本来算在窗口内的条目：
+  - 默认 `by=timeline`：用时间轴值——`publishedAt` 为空取 `discoveredAt`；`discoveredAt - publishedAt > 72 小时`（历史回填）取 `publishedAt`；其余取 `discoveredAt`。
+  - 显式 `by=published`：才直接用 `publishedAt`。
+  - 拿 `publishedAt` 去收窄默认口径，会把官方博客、公众号、HuggingFace Daily 这类慢推信源整批误删（见上方「时间口径」）。
 - 超过 7 天的普通公开池不承诺可用；不要用 selected snapshot 冒充历史搜索。
