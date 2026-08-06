@@ -21,7 +21,7 @@
 这里的每个 Skill 都是 Agent 能直接加载的结构化指令集，遵循 [Agent Skills](https://agentskills.io) 开放标准。Claude Code、Codex、Qoder、Kimi Code、iFlow、CodeBuddy、Cursor 等 40+ 支持该标准的 Agent 都能装。
 
 > [!NOTE]
-> 这是基于 [`KKKKhazix/khazix-skills`](https://github.com/KKKKhazix/khazix-skills) 的社区维护中文 fork，当前同步到上游 `a061851`。下方安装命令会从本 fork 加载对应目录下的 `SKILL.md` 和 `references/`。
+> 这是基于 [`KKKKhazix/khazix-skills`](https://github.com/KKKKhazix/khazix-skills) 的社区维护中文 fork，当前同步到上游 `1757349`。下方安装命令会从本 fork 加载对应目录下的 `SKILL.md` 和 `references/`。
 
 ---
 
