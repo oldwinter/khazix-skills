@@ -10,7 +10,7 @@
 - 目标用户：希望直接使用中文 skill 的 Agent 用户
 - 用户安装后实际读取的入口文件：`<skill-name>/SKILL.md` 及其 `references/`、`scripts/` 和 `assets/`
 - 不应宣传为中文版安装的入口：任何仍指向上游仓库的安装 URL
-- 当前同步上游 commit：`3fa874169134f65b14e8a27164386510bc867037`
+- 当前同步上游 commit：`48e8ba527f0be55f77772debb979c92f06acf5c0`
 
 ## 本地化目标
 
