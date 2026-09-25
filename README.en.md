@@ -43,7 +43,7 @@ In any agent that supports Agent Skills (Claude Code, Codex…), just say:
 Install this skill: https://github.com/oldwinter/khazix-skills/tree/main/<skill-name>
 ```
 
-Replace `<skill-name>` with the one you want — e.g. `neat-freak`, `hv-analysis`, `khazix-writer`. The agent will clone it into the right directory for you.
+Replace `<skill-name>` with the folder name from the table: `leader`, `storage-analyzer`, `aihot`, `neat-freak`, `hv-analysis`, `khazix-writer`. The agent will clone it into the right directory for you.
 
 Agent doesn't support Skills? Download the `SKILL.md` from the skill's directory and hand it to your agent as a project rule file (or paste it into the conversation) — same effect.
 
