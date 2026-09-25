@@ -22,7 +22,7 @@ CSS_TEMPLATE = """
         content: "HEADER_TEXT";
         font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
         font-size: 8pt;
-        color: #95a5a6;
+        color: #5d6d7e;
         border-bottom: 0.5pt solid #ecf0f1;
         padding-bottom: 3mm;
     }
@@ -31,7 +31,7 @@ CSS_TEMPLATE = """
         content: "第 " counter(page) " 页";
         font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
         font-size: 8pt;
-        color: #95a5a6;
+        color: #5d6d7e;
         border-top: 0.8pt solid #1a5276;
         padding-top: 2mm;
     }
@@ -65,12 +65,12 @@ body {
 }
 .cover .subtitle {
     font-size: 14pt;
-    color: #95a5a6;
+    color: #5d6d7e;
     margin-bottom: 6mm;
 }
 .cover .meta {
     font-size: 11pt;
-    color: #95a5a6;
+    color: #5d6d7e;
     margin-bottom: 4mm;
 }
 .cover .divider {
