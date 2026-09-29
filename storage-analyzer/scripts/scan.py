@@ -290,7 +290,7 @@ def main():
         print(json.dumps({"error": "unsupported_platform", "platform": sys.platform,
                           "message": "scan.py 仅支持 macOS 和 Windows。"},
                          ensure_ascii=False))
-        return
+        raise SystemExit(2)
     data = {
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "system": system,
