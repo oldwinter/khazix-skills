@@ -310,6 +310,18 @@ You want "good general writing." This skill takes a position. It **refuses** cor
 
 ---
 
+## ✅ Repository validation
+
+Run before submitting changes:
+
+```bash
+python3 -m unittest discover -s . -p 'test*.py' -v
+python3 scripts/validate_repository.py
+bash -n aihot/install.sh neat-freak/scripts/audit-inventory.sh
+```
+
+---
+
 ## 🌟 About
 
 I'm Khazix (数字生命卡兹克), founder of Virxact. I try to share fun, practical AI know-how — and may we always stay curious about the world.

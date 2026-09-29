@@ -36,10 +36,66 @@ TPL = ""
 RM_ALLOW = set()
 TRASH_ALLOW = set()
 OPEN_ALLOW = set()
+MAX_BODY_BYTES = 64 * 1024
+MAX_PATHS = 100
+
+
+class ActionRequestError(ValueError):
+    def __init__(self, status, message):
+        super().__init__(message)
+        self.status = status
+
+
+def json_for_script(value):
+    """Serialize JSON without allowing data to close the script element."""
+    return (
+        json.dumps(value, ensure_ascii=False)
+        .replace("&", "\\u0026")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
 
 
 def expand(p):
     return os.path.realpath(os.path.expanduser(p))
+
+
+def is_same_or_descendant(path, root):
+    try:
+        return os.path.commonpath((path, root)) == root
+    except ValueError:
+        return False
+
+
+def prepare_actions(mode, paths):
+    allow = {"rm": RM_ALLOW, "trash": TRASH_ALLOW, "open": OPEN_ALLOW}.get(mode)
+    if allow is None:
+        raise ActionRequestError(400, "未知操作")
+    if not isinstance(paths, list) or not paths:
+        raise ActionRequestError(400, "paths 必须是非空数组")
+    if len(paths) > MAX_PATHS:
+        raise ActionRequestError(413, "单次请求路径过多")
+
+    prepared = []
+    for path in paths:
+        if not isinstance(path, str) or not path:
+            raise ActionRequestError(400, "路径必须是非空字符串")
+        resolved = expand(path)
+        if resolved not in allow:
+            raise ActionRequestError(403, "路径不在白名单：%s" % path)
+        if mode == "open":
+            if not any(is_same_or_descendant(resolved, root) for root in (HOME, "/Applications")):
+                raise ActionRequestError(403, "路径越界：%s" % path)
+        else:
+            if resolved == HOME or not is_same_or_descendant(resolved, HOME):
+                raise ActionRequestError(403, "破坏性路径必须位于用户目录内部：%s" % path)
+            trash_root = os.path.join(HOME, ".Trash")
+            if is_same_or_descendant(resolved, trash_root):
+                raise ActionRequestError(403, "不允许直接处理废纸篓根目录或其内容：%s" % path)
+        prepared.append((path, resolved))
+    return prepared
 
 
 def load(src):
@@ -168,8 +224,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path in ("/", "/index.html"):
-            blob = json.dumps(DATA, ensure_ascii=False)
-            cfg = json.dumps({"token": TOKEN, "endpoint": "/action"})
+            blob = json_for_script(DATA)
+            cfg = json_for_script({"token": TOKEN, "endpoint": "/action"})
             html = TPL.replace("__REPORT_DATA__", blob).replace("__DELETE_CONFIG__", cfg)
             self._send(200, html, "text/html; charset=utf-8")
         else:
@@ -184,31 +240,40 @@ class Handler(BaseHTTPRequestHandler):
         if host not in ("127.0.0.1", "localhost"):
             self._send(403, json.dumps({"ok": False, "error": "host 不被允许"}))
             return
-        n = int(self.headers.get("Content-Length", 0))
+        raw_length = self.headers.get("Content-Length")
         try:
-            req = json.loads(self.rfile.read(n) or b"{}")
+            n = int(raw_length)
+        except (TypeError, ValueError):
+            self._send(400, json.dumps({"ok": False, "error": "Content-Length 无效"}))
+            return
+        if n <= 0:
+            self._send(400, json.dumps({"ok": False, "error": "请求体不能为空"}))
+            return
+        if n > MAX_BODY_BYTES:
+            self._send(413, json.dumps({"ok": False, "error": "请求体过大"}))
+            return
+        try:
+            raw = self.rfile.read(n)
+            if len(raw) != n:
+                raise ValueError("请求体长度不完整")
+            req = json.loads(raw)
         except Exception:
             self._send(400, json.dumps({"ok": False, "error": "请求格式错误"}))
+            return
+        if not isinstance(req, dict):
+            self._send(400, json.dumps({"ok": False, "error": "请求必须是 JSON 对象"}))
             return
         if req.get("token") != TOKEN:
             self._send(403, json.dumps({"ok": False, "error": "token 校验失败"}))
             return
         mode = req.get("mode")
-        allow = {"rm": RM_ALLOW, "trash": TRASH_ALLOW, "open": OPEN_ALLOW}.get(mode)
-        if allow is None:
-            self._send(400, json.dumps({"ok": False, "error": "未知操作"}))
+        try:
+            prepared = prepare_actions(mode, req.get("paths"))
+        except ActionRequestError as error:
+            self._send(error.status, json.dumps({"ok": False, "error": str(error)}))
             return
         done = []
-        for p in (req.get("paths") or []):
-            rp = expand(p)
-            if rp not in allow:
-                self._send(403, json.dumps({"ok": False, "error": "路径不在白名单：%s" % p}))
-                return
-            # 二级护栏：只允许用户目录或 /Applications（后者仅 open 用，删除白名单不含它）
-            roots = (HOME, "/Applications")
-            if not any(rp == base or rp.startswith(base + os.sep) for base in roots):
-                self._send(403, json.dumps({"ok": False, "error": "路径越界：%s" % p}))
-                return
+        for p, rp in prepared:
             try:
                 if mode == "open":
                     open_in_file_manager(rp)
