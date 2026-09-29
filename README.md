@@ -311,6 +311,18 @@ storage analysis
 
 ---
 
+## ✅ 仓库验证
+
+提交前运行：
+
+```bash
+python3 -m unittest discover -s . -p 'test*.py' -v
+python3 scripts/validate_repository.py
+bash -n aihot/install.sh neat-freak/scripts/audit-inventory.sh
+```
+
+---
+
 ## 🌟 关于
 
 我是数字生命卡兹克，虚实传媒创始人，努力地分享一些有趣的 AI 干货，也愿我们永远对世界保持好奇。

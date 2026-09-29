@@ -10,6 +10,10 @@
 # Tessl auto-generated tile files (regenerated on every publish)
 */tile.json
 
+# Python validation artifacts
+__pycache__/
+*.py[cod]
+
 # Local Claude Code project settings
 .claude/settings.local.json
 

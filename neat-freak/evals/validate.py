@@ -8,6 +8,9 @@ import re
 import stat
 from pathlib import Path
 
+if not __debug__:
+    raise SystemExit("neat-freak validation must run without Python -O optimization")
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "SKILL.md"

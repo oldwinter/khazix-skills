@@ -6,11 +6,12 @@
 依赖: pip install weasyprint markdown --break-system-packages
 """
 
-import sys
+import html
 import os
 import re
 import argparse
-import markdown
+import sys
+from pathlib import Path
 
 # ── CSS 样式 ──
 CSS_TEMPLATE = """
@@ -201,9 +202,35 @@ a {
 """
 
 
+def html_text(value):
+    return html.escape(str(value), quote=True)
+
+
+def css_escape(value):
+    """Escape untrusted text for a quoted CSS string inside a style element."""
+    return (
+        str(value)
+        .replace("\\", "\\\\")
+        .replace("<", "\\3c ")
+        .replace(">", "\\3e ")
+        .replace('\"', '\\"')
+        .replace("\r", " ")
+        .replace("\n", " ")
+        .replace("\f", " ")
+    )
+
+
+def debug_html_path(output):
+    path = Path(output)
+    if path.suffix:
+        return str(path.with_suffix(".html"))
+    return str(path.with_name(path.name + ".html"))
+
+
 def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深度研究报告",
                meta_line="", author="数字生命卡兹克"):
     """将 Markdown 转为带封面的 HTML"""
+    import markdown
 
     # 用 markdown 库转换正文
     html_body = markdown.markdown(
@@ -217,20 +244,22 @@ def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深
     if first_h1_match:
         extracted_title = first_h1_match.group(1)
         if not title or title == "横纵分析报告":
-            title = extracted_title
+            title = html.unescape(re.sub(r"<[^>]+>", "", extracted_title))
         html_body = html_body.replace(first_h1_match.group(0), '', 1)
 
     # 替换 CSS 中的页眉占位符
-    css = CSS_TEMPLATE.replace("HEADER_TEXT", f"{title}  |  横纵分析法深度研究报告")
+    css = CSS_TEMPLATE.replace(
+        "HEADER_TEXT", css_escape(f"{title}  |  横纵分析法深度研究报告")
+    )
 
     # 构建封面
     cover_html = f"""
     <div class="cover">
-        <h1 style="page-break-before: avoid; border: none;">{title}</h1>
-        <div class="subtitle">{subtitle}</div>
-        {"<div class='meta'>" + meta_line + "</div>" if meta_line else ""}
+        <h1 style="page-break-before: avoid; border: none;">{html_text(title)}</h1>
+        <div class="subtitle">{html_text(subtitle)}</div>
+        {"<div class='meta'>" + html_text(meta_line) + "</div>" if meta_line else ""}
         <hr class="divider">
-        <div class="meta">作者: {author}</div>
+        <div class="meta">作者: {html_text(author)}</div>
     </div>
     """
 
@@ -271,7 +300,7 @@ def main():
     html = md_to_html(md_text, title=args.title or "横纵分析报告", meta_line=meta_line, author=args.author)
 
     # 保存中间 HTML（便于调试）
-    html_path = args.output.replace('.pdf', '.html')
+    html_path = debug_html_path(args.output)
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(html)
     print(f"[OK] HTML 已生成: {html_path}")
