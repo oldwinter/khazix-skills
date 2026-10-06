@@ -74,8 +74,8 @@ def validate() -> list[str]:
         if actual != expected:
             errors.append(f"aihot/manifest.sha256: hash mismatch {relative}")
         entries.append(relative)
-    if len(entries) != 6 or len(entries) != len(set(entries)):
-        errors.append("aihot/manifest.sha256: expected six unique runtime files")
+    if len(entries) != 3 or len(entries) != len(set(entries)):
+        errors.append("aihot/manifest.sha256: expected three unique runtime files")
 
     workflow = ROOT / ".github" / "workflows" / "repository-integrity.yml"
     if not workflow.is_file():
