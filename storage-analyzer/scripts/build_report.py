@@ -13,8 +13,8 @@ Schema（除 system 外，其余章节都可选）：
   "system": {os, build, arch, user, home, filesystem,
              disk_total, disk_used, disk_free, purgeable},
   "top5": [{rank, tier(green|yellow|red), size, type, name, path, note}],
-  "green":  [{name, path, size_estimate, kill_processes:[], trash_paths:[...], commands:[{label,cmd}]}],
-  "yellow": [{name, path, size, content_profile, why_manual, disposal, risk, trash_paths:[...]?, open_note?}],
+  "green":  [{name, path, size_estimate, kill_processes:[], trash_paths:[...], clear_contents?, commands:[{label,cmd}]}],
+  "yellow": [{name, path, size, content_profile, why_manual, disposal, risk, trash_paths:[...]?, clear_contents?, open_note?}],
   "red":    [{name, path, size, why_keep, indirect_release, auto_reclaim, app_paths:[...]?}],
   "denied": ["/path/one", ...],
   "summary": {overview, tier_stats:{green,yellow,red}, priority:[...], long_term:[...]}
@@ -46,11 +46,11 @@ def main():
         sys.exit(1)
     src = sys.argv[1]
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser(
-        "~/Desktop/storage-report.html")
+        "storage-report.html")
 
-    with open(src, "r", encoding="utf-8") as f:
+    with open(src, "r", encoding="utf-8-sig") as f:
         data = json.load(f)
-    with open(TEMPLATE, "r", encoding="utf-8") as f:
+    with open(TEMPLATE, "r", encoding="utf-8-sig") as f:
         tpl = f.read()
 
     blob = json_for_script(data)
